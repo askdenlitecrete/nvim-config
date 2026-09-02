@@ -22,7 +22,7 @@ require("lualine").setup({
     component_separators = "|",
     section_separators = "",
     disabled_filetypes = {
-      winbar = { "neo-tree", "dbui", "dap-repl", "dapui_scopes", "dapui_watches", "toggleterm" },
+      winbar = { "neo-tree", "dbui", "dap-repl", "dapui_scopes", "dapui_watches" },
     },
   },
   sections = {
@@ -46,6 +46,15 @@ require("lualine").setup({
     },
   },
   inactive_winbar = {
-    lualine_c = { { "filename", path = 1, fmt = filename_fmt } },
+    -- no winbar on any terminal window (toggleterm or plain :terminal) --
+    -- there's nothing structural to show for a shell session
+    lualine_c = {
+      {
+        "filename",
+        path = 1,
+        fmt = filename_fmt,
+        cond = function() return vim.bo.buftype ~= "terminal" end,
+      },
+    },
   },
 })
