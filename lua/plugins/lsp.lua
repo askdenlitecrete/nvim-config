@@ -70,23 +70,33 @@ for name, cfg in pairs(servers) do
   end
 end
 
--- Only auto-install servers whose language toolchain is actually present. This
--- box has no Go or Rust, and mason builds gopls with `go install` -- without it
--- the install fails on every startup. The server stays configured above, so
--- `:MasonInstall gopls` after installing Go is all it takes.
+-- Servers whose language toolchain must be present to be useful. This box has
+-- no Go or Rust: mason builds gopls with `go install` (fails without Go), and
+-- an installed rust_analyzer attaches to every .rs buffer and errors
+-- "cargo not found". Both stay in `servers` above; install the toolchain +
+-- `:MasonInstall gopls` / `rust_analyzer` to light them back up.
 local needs_toolchain = { gopls = "go", rust_analyzer = "cargo" }
-local ensure_installed = {}
+
+-- The servers we can actually use here: everything in `servers`, minus any whose
+-- language toolchain is absent (no Go/Rust on this box).
+local usable = {}
 for name in pairs(servers) do
   local tool = needs_toolchain[name]
   if not tool or vim.fn.executable(tool) == 1 then
-    ensure_installed[#ensure_installed + 1] = name
+    usable[#usable + 1] = name
   end
 end
 
 require("mason-lspconfig").setup({
-  ensure_installed = ensure_installed,
-  automatic_enable = { exclude = { "ts_ls" } }, -- typescript-tools owns TS/JS
+  ensure_installed = usable,
+  -- Don't let mason-lspconfig auto-enable *every* installed server -- that
+  -- double-attaches when two cover one filetype (dockerls + docker-language-
+  -- server on a Dockerfile) and lights up toolchain-less servers already on
+  -- disk (rust_analyzer -> "cargo not found" on every .rs buffer). We enable
+  -- exactly `usable` ourselves.
+  automatic_enable = false,
 })
+vim.lsp.enable(usable)
 
 -- typescript-tools.nvim: attaches to JS/TS buffers as its own LSP client, so
 -- the LspAttach keymaps and navic below apply to it unchanged.
