@@ -1,0 +1,8 @@
+# plugin clones — reproduced by lua/bootstrap.lua from plugins.lock
+/pack/
+
+# runtime junk
+/spell/
+.netrwhist
+*.swp
+tags
