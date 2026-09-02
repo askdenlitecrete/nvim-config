@@ -4,20 +4,27 @@ No distribution and **no plugin-manager framework** — no lazy.nvim, packer or
 vim-plug. Plugins are plain `git` checkouts under `pack/core/start/`, Neovim's
 own package mechanism (`:help packages`): every directory there is on the
 runtimepath at startup. `lua/bootstrap.lua` runs `git clone` for missing ones
-and provides `:PluginUpdate` / `:PluginStatus`. Every plugin is configured by
-hand, one feature per file in `lua/plugins/`.
+and provides `:PluginUpdate` / `:PluginStatus` / `:PluginLock` / `:PluginRestore`.
+Every plugin is configured by hand, one feature per file in `lua/plugins/`.
+
+This directory is a **git repo**. `plugins.lock` (committed JSON, name → commit)
+is the reproducibility mechanism a plugin manager would give you: a fresh clone
+checks out the locked commit, and `:PluginRestore` rolls a bad `:PluginUpdate`
+back. `pack/` itself is `.gitignore`d — it's regenerated from `plugins.lock`.
 
 ## Layout
 
 ```
 init.lua              core/* → bootstrap → each plugins/* module
+plugins.lock          committed: every plugin pinned to an exact commit
 lua/core/             options, keymaps, autocmds   (no plugins)
-lua/bootstrap.lua     the plugin list + git clone/update   (the only 3rd-party code)
+lua/bootstrap.lua     the plugin list + git clone/update/lock   (the only 3rd-party code)
 lua/plugins/
-  colorscheme  treesitter  telescope  lsp  mason-tools  completion
-  lint  format  comment  motion  git  gittools  statusline  explorer
-  terminal  trouble  dap  testing  database  http  web  ui  session  editing
-pack/core/start/      the ~60 plugin clones (safe to delete + re-clone)
+  colorscheme  treesitter  tscontext  telescope  lazydev  lsp  mason-tools
+  completion  lint  format  comment  motion  git  gittools  statusline
+  explorer  terminal  trouble  search  harpoon  dap  testing  database
+  http  web  ui  session  editing
+pack/core/start/      the ~66 plugin clones (gitignored, safe to delete + re-clone)
 ```
 
 ## Missing-Semester lecture → this config
@@ -35,12 +42,13 @@ pack/core/start/      the ~60 plugin clones (safe to delete + re-clone)
 
 | Area | Plugins | Notes |
 |---|---|---|
-| **LSP** | mason + mason-lspconfig + nvim-lspconfig | ts_ls, eslint, html, cssls, tailwindcss, emmet, graphql, prismals, dockerls, docker-compose, jsonls, yamlls, sqlls, marksman, pyright, gopls, rust_analyzer, lua_ls, bashls |
-| **Completion** | nvim-cmp, LuaSnip, lspkind, cmp-cmdline, signature-help | `:`/`/` cmdline completion; dadbod completion in SQL |
+| **LSP** | mason + mason-lspconfig + nvim-lspconfig (native `vim.lsp.enable`) | typescript-tools (TS/JS), eslint, html, cssls, tailwindcss, emmet, graphql, prismals, dockerls, docker-compose, jsonls, yamlls, sqlls, marksman, pyright, gopls, rust_analyzer, lua_ls, bashls |
+| **Completion** | nvim-cmp, LuaSnip, lspkind, cmp-cmdline, signature-help, lazydev | `:`/`/` cmdline completion; dadbod completion in SQL; lazydev = full nvim-runtime API when editing this config |
+| **Refactor** | grug-far.nvim, harpoon (v2) | project-wide find & replace in a buffer; pin & jump between working-set files |
 | **Format** | conform.nvim | prettier(d), stylua, shfmt, sql_formatter, gofmt, rustfmt — on save |
 | **Lint** | nvim-lint | shellcheck, stylelint, ruff, markdownlint (JS/TS handled by eslint LSP) |
-| **Treesitter** | + textobjects, ts-autotag, ts-context-commentstring | `vif`/`vaf`, auto-close JSX tags, JSX-aware comments |
-| **Debug** | nvim-dap, dap-ui, dap-virtual-text | js-debug-adapter (Node/Chrome), debugpy (needs pip) |
+| **Treesitter** | + textobjects, context, ts-autotag, ts-context-commentstring | `vif`/`vaf`, sticky signature header, auto-close JSX tags, JSX-aware comments |
+| **Debug** | nvim-dap, dap-ui, dap-virtual-text | js-debug-adapter (Node/Chrome), debugpy (`:MasonInstall debugpy`, needs `uv`) |
 | **Test** | neotest + vitest / jest / playwright / python | signs in the gutter, debug a test with DAP |
 | **Git** | gitsigns, vim-fugitive, diffview.nvim | gutter + full status/commit + diff & history UI |
 | **DB** | vim-dadbod (+ ui, + completion) | Postgres/MySQL/SQLite; picks up `$DATABASE_URL` |
@@ -73,7 +81,8 @@ Pause after `<leader>` to see the menu (which-key). Group prefixes:
 | `<leader>t` | terminal | `<leader>R` | REST client |
 | `<leader>s` | split | `<leader>n` | npm / package.json |
 | `<leader>b` | buffer | `<leader>P` | project / session |
-| `<leader>u` | ui toggles | `<leader>r` | rename / refactor |
+| `<leader>u` | ui toggles | `<leader>r` | refactor / replace |
+| `<leader>m` | marks (harpoon) | | |
 
 ### Everyday
 | key | action |
@@ -87,6 +96,8 @@ Pause after `<leader>` to see the menu (which-key). Group prefixes:
 | `s` + 2 chars | flash jump · `S` treesitter select |
 | `<C-\>` | terminal · `<leader>tr` run current file · `<leader>tg` lazygit |
 | `gcc` / `gc{motion}` | toggle comment (JSX-aware) |
+| `<leader>ma` add harpoon mark · `<leader>mm` menu · `<leader>m1`..`m4` jump |
+| `<leader>rr` project find & replace (grug-far) · `<leader>rw` on word under cursor |
 
 ### LSP (once a server attaches)
 | key | action |
@@ -95,7 +106,7 @@ Pause after `<leader>` to see the menu (which-key). Group prefixes:
 | `K` hover · `<leader>rn` rename · `<leader>ca` code action |
 | `<leader>cf` format · `<leader>cd` line diagnostics · `<leader>ch` toggle inlay hints |
 | `<leader>cs` / `<leader>cS` | document / workspace symbols |
-| `[d` / `]d` diagnostics · `[f` / `]f` functions · `[c` / `]c` classes |
+| `[d` / `]d` diagnostics · `[f` / `]f` functions · `[c` / `]c` classes · `[x` jump to context |
 
 ### Git
 | key | action |
@@ -134,28 +145,37 @@ Pause after `<leader>` to see the menu (which-key). Group prefixes:
 
 | command | effect |
 |---|---|
-| `:PluginStatus` | list every plugin + its git ref |
-| `:PluginUpdate` | `git pull --ff-only` each (pinned tags skipped) |
+| `:PluginStatus` | list every plugin + its git ref (flags any AHEAD of the lock) |
+| `:PluginUpdate` | `git pull --ff-only` each (pinned version tags skipped) |
+| `:PluginLock` | write every plugin's exact commit to `plugins.lock` — **commit it** |
+| `:PluginRestore` | check every plugin back out to `plugins.lock` (undo a bad update) |
 | `:Mason` | install/remove servers, linters, formatters, debug adapters |
 
-**Add:** a line in `PLUGINS` (`lua/bootstrap.lua`) → restart → a `lua/plugins/<name>.lua`
-doing `require("<name>").setup{…}` → a line in `init.lua`'s loop.
-**Remove:** delete those three, then `rm -rf pack/core/start/<name>`.
-**By hand, no bootstrap:** `git clone --depth=1 <url> ~/.config/nvim/pack/core/start/<name>`.
+**Update flow:** `:PluginUpdate` → restart → `:TSUpdate` → test → `:PluginLock` →
+`git commit plugins.lock`. If an update breaks something: `:PluginRestore`.
 
-### Pinned for Neovim 0.10.4 (`lua/bootstrap.lua`)
-`nvim-lspconfig` → `v1.8.0`, `mason`/`mason-lspconfig` → `1.x`, `nvim-treesitter`
-→ `master`. After upgrading Neovim to 0.11+, drop those `ref =` fields and
-`:PluginUpdate`.
+**Add:** a line in `PLUGINS` (`lua/bootstrap.lua`) → restart → a `lua/plugins/<name>.lua`
+doing `require("<name>").setup{…}` → a line in `init.lua`'s loop → `:PluginLock`.
+**Remove:** delete those three, then `rm -rf pack/core/start/<name>` → `:PluginLock`.
+
+### Version notes (`lua/bootstrap.lua`)
+Runs on **Neovim 0.12** (Homebrew). LSP uses the native `vim.lsp.config` /
+`vim.lsp.enable` path via mason-lspconfig's `automatic_enable`. Only two refs are
+pinned to a branch: `nvim-treesitter` → `master` (the `main` rewrite needs manual
+parser management), `telescope.nvim` → `0.1.x`, `neo-tree.nvim` → `v3.x`. A
+future job: migrate treesitter to `main`.
 
 ## This machine (WSL2 / Debian trixie)
 
-- **Clipboard** (`y`/`p` with Windows): `sudo apt install wl-clipboard`, or put
-  `win32yank.exe` on the Windows PATH.
+- **Neovim**: Homebrew `neovim` (0.12) shadows Debian's apt `nvim` (0.10.4).
+  `brew uninstall neovim` reverts. `apt`'s is still at `/usr/bin/nvim`.
+- **Clipboard**: `wl-clipboard` is installed (`wl-copy`), so `y`/`p` share the
+  Windows clipboard through WSLg.
 - **Nerd Font**: set one in the Windows terminal or icons show as boxes.
-- **Python tooling** (`debugpy`, `yamllint`, `ruff`): this box's `python3` has no
-  pip — `sudo apt install python3-pip python3-venv`, then
-  `:MasonInstall debugpy yamllint ruff`.
-- **Optional**: `lazygit` (for `<leader>tg`).
+- **CLI tools** (Homebrew): `fd` `lazygit` `delta` `bat` `eza` `zoxide` `atuin`
+  `direnv` `just` `lazydocker` `watchexec` `difftastic` `uv`. Shell wiring is in
+  `~/.zshrc` (`# CLI TOOLS` block).
+- **Python tooling** (`debugpy`, `yamllint`, `ruff`): `uv` is installed, so
+  `:MasonInstall debugpy yamllint ruff` now works.
 
 Old config kept as `init.vim.bak`.

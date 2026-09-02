@@ -26,7 +26,9 @@ require("bootstrap").ensure()
 for _, mod in ipairs({
   "plugins.colorscheme",
   "plugins.treesitter",
+  "plugins.tscontext",   -- sticky signature header (treesitter-context)
   "plugins.telescope",   -- before lsp: LspAttach maps use telescope.builtin
+  "plugins.lazydev",     -- before lsp: extends lua_ls / adds a cmp source
   "plugins.lsp",         -- sets up nvim-navic; before statusline
   "plugins.mason-tools",
   "plugins.completion",
@@ -40,6 +42,8 @@ for _, mod in ipairs({
   "plugins.explorer",
   "plugins.terminal",
   "plugins.trouble",
+  "plugins.search",      -- grug-far project find & replace
+  "plugins.harpoon",     -- pinned-file quick-nav
   "plugins.dap",
   "plugins.testing",
   "plugins.database",

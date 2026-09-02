@@ -6,6 +6,7 @@ require("render-markdown").setup({
   completions = { lsp = { enabled = true } },
   heading = { sign = false },
   code = { sign = false, width = "block", min_width = 45 },
+  latex = { enabled = false }, -- no latex2text/utftex on this box; silences :checkhealth
 })
 
 -- `<leader>u` = UI toggles

@@ -62,6 +62,9 @@ cmp.setup({
     end, { "i", "s" }),
   }),
   sources = cmp.config.sources({
+    -- lazydev feeds the Neovim runtime API into Lua buffers; group_index 0
+    -- lets it pre-empt the lua_ls results there (no effect elsewhere).
+    { name = "lazydev", group_index = 0 },
     { name = "nvim_lsp" },
     { name = "nvim_lsp_signature_help" },
     { name = "luasnip" },
