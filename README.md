@@ -170,8 +170,8 @@ future job: migrate treesitter to `main`.
 - **Neovim**: official tarball at `~/.local/bin/nvim` → `~/.local/opt/nvim-0.12.5`
   (that dir is first on `$PATH`). Upgrade = extract the new
   `nvim-linux-x86_64.tar.gz` to `~/.local/opt/nvim-<ver>` and repoint the
-  `~/.local/opt/nvim` symlink. Homebrew's 0.12.5 and apt's 0.10.4
-  (`/usr/bin/nvim`) sit behind it as fallbacks.
+  `~/.local/opt/nvim` symlink. (Homebrew's `neovim` was uninstalled; apt's
+  0.10.4 at `/usr/bin/nvim` is the only other one.)
 - **Clipboard**: `wl-clipboard` is installed (`wl-copy`), so `y`/`p` share the
   Windows clipboard through WSLg.
 - **Nerd Font**: set one in the Windows terminal or icons show as boxes.
