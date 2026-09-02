@@ -7,7 +7,7 @@ local autocmd = vim.api.nvim_create_autocmd
 autocmd("TextYankPost", {
   group = augroup("highlight_yank"),
   callback = function()
-    (vim.hl or vim.highlight).on_yank()
+    vim.hl.on_yank()
   end,
 })
 
@@ -16,6 +16,9 @@ autocmd("BufWritePre", {
   group = augroup("trim_whitespace"),
   pattern = "*",
   callback = function()
+    if not vim.bo.modifiable or vim.bo.readonly then
+      return
+    end
     local view = vim.fn.winsaveview()
     vim.cmd([[keeppatterns %s/\s\+$//e]])
     vim.fn.winrestview(view)
