@@ -43,7 +43,10 @@ local servers = {
   cssls = {},
   tailwindcss = {},
   emmet_language_server = {},
-  graphql = {},
+  -- lspconfig's default filetypes for graphql include JS/TS/JSX/Vue (for gql
+  -- tagged templates), so it attaches to every React file and navic warns
+  -- about a second server. Restrict it to actual GraphQL schema/query files.
+  graphql = { filetypes = { "graphql", "gql" } },
   eslint = {}, -- fix-on-save wired in the LspAttach handler below
 
   -- data / infra
