@@ -32,6 +32,7 @@ for _, mod in ipairs({
   "plugins.lsp",         -- sets up nvim-navic; before statusline
   "plugins.mason-tools",
   "plugins.completion",
+  "plugins.minuet",     -- local-LLM ghost-text (after completion: reuses cmp/plenary)
   "plugins.lint",
   "plugins.format",
   "plugins.comment",
