@@ -83,11 +83,6 @@ local PLUGINS = {
   { "https://github.com/hrsh7th/cmp-nvim-lsp-signature-help" },
   { "https://github.com/hrsh7th/cmp-cmdline" },
 
-  -- local-LLM code completion: fill-in-the-middle ghost text served by a
-  -- local Ollama daemon on the RTX 3050 Ti. No cloud, no API key, offline.
-  -- Model + keymaps in lua/plugins/minuet.lua.
-  { "https://github.com/milanglacier/minuet-ai.nvim" },
-
   -- diagnostics / navigation UI
   { "https://github.com/folke/trouble.nvim" },
   { "https://github.com/folke/todo-comments.nvim" },
