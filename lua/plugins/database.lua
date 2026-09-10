@@ -16,6 +16,14 @@ vim.g.db_ui_win_position = "left"
 vim.g.db_ui_winwidth = 32
 vim.g.db_ui_execute_on_save = 0 -- don't run the whole file every :w
 
+-- vim-dadbod-ui/plugin/db_ui.vim does an unconditional `silent! call
+-- remove(g:db_ui_icons, 'collapsed'/'expanded')` at load; with g:db_ui_icons
+-- unset that throws a (silenced) E716 on every startup that still lands in
+-- v:errmsg. Seeding stub sub-dicts makes it take the guarded branch. The stub
+-- keys are never rendered (dadbod only reads db/buffers/schemas/schema/tables/
+-- table), and nerd-font glyphs are still applied on top.
+vim.g.db_ui_icons = { expanded = { _ = "" }, collapsed = { _ = "" } }
+
 -- Pick up a DATABASE_URL from the environment as a "dev" connection.
 if vim.env.DATABASE_URL and vim.env.DATABASE_URL ~= "" then
   vim.g.dbs = vim.g.dbs or { dev = vim.env.DATABASE_URL }
