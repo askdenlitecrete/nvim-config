@@ -50,6 +50,10 @@ opt.undofile = true    -- undo history survives closing the file
 opt.updatetime = 250   -- drives CursorHold (LSP hover, gitsigns)
 opt.timeoutlen = 400   -- ms to wait for a multi-key mapping
 
+-- Keep a deep history in the shada file: cursor marks for the last 1000 files
+-- (drives :oldfiles / Telescope oldfiles across every repo), 50-line registers.
+opt.shada = "!,'1000,<50,s10,h"
+
 -- System integration ------------------------------------------------------
 opt.mouse = "a"
 opt.clipboard = "unnamedplus" -- y/p share the OS clipboard

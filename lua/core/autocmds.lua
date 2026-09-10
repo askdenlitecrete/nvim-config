@@ -37,6 +37,15 @@ autocmd("BufReadPost", {
   end,
 })
 
+-- Refresh buffers changed on disk (git checkout, a restored tmux session, a
+-- formatter run in another pane) when focus or a terminal returns to nvim.
+autocmd({ "FocusGained", "TermClose", "TermLeave" }, {
+  group = augroup("autoread"),
+  callback = function()
+    if vim.o.buftype == "" then vim.cmd("checktime") end
+  end,
+})
+
 -- In throwaway windows, `q` closes.
 autocmd("FileType", {
   group = augroup("quick_close"),
